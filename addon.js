@@ -12,12 +12,12 @@ const anilistCatalog = require('./lib/anilist_catalog');
 const CACHE_MAX_AGE = parseInt(process.env.CACHE_MAX_AGE) || 12 * 60 * 60; // 12 hours
 
 const manifest = {
-  id: 'community.anime.kitsu',
+  id: 'community.anime.dattebayo',
   version: '0.0.11',
-  name: 'Anime Kitsu + AniList',
-  description: 'Kitsu-based meta/subtitles with AniList-powered Trending & Popular This Season catalogs.',
-  logo: 'https://i.imgur.com/7N6XGoO.png',
-  background: 'https://i.imgur.com/ym4n96o.png',
+  name: 'Dattebayo',
+  description: 'Anime Kitsu-based meta/subtitles with AniList-powered Trending & Popular This Season catalogs.',
+  logo: 'https://i.ibb.co/pBknMb80/dattebayo-logo.png',
+  background: 'https://i.ibb.co/BJ0xMpX/dattebayo-background.png',
   resources: ['catalog', 'meta', 'subtitles'],
   types: ['anime', 'movie', 'series'],
   catalogs: [
