@@ -32,27 +32,27 @@ const manifest = {
       type: 'anime'
     },
     // Keep original Kitsu catalogs if you want them too
-    // {
-    //   id: 'kitsu-anime-airing',
-    //   name: 'Kitsu Top Airing',
-    //   type: 'anime',
-    //   extra: [{ name: 'genre', options: genres }, { name: 'skip' }],
-    //   genres: genres
-    // },
-    // {
-    //   id: 'kitsu-anime-popular',
-    //   name: 'Kitsu Most Popular',
-    //   type: 'anime',
-    //   extra: [{ name: 'genre', options: genres }, { name: 'skip' }],
-    //   genres: genres
-    // },
-    // {
-    //   id: 'kitsu-anime-rating',
-    //   name: 'Kitsu Highest Rated',
-    //   type: 'anime',
-    //   extra: [{ name: 'genre', options: genres }, { name: 'skip' }],
-    //   genres: genres
-    // },
+    {
+      id: 'kitsu-anime-airing',
+      name: 'Kitsu Top Airing',
+      type: 'anime',
+      extra: [{ name: 'genre', options: genres }, { name: 'skip' }],
+      genres: genres
+    },
+    {
+      id: 'kitsu-anime-popular',
+      name: 'Kitsu Most Popular',
+      type: 'anime',
+      extra: [{ name: 'genre', options: genres }, { name: 'skip' }],
+      genres: genres
+    },
+    {
+      id: 'kitsu-anime-rating',
+      name: 'Kitsu Highest Rated',
+      type: 'anime',
+      extra: [{ name: 'genre', options: genres }, { name: 'skip' }],
+      genres: genres
+    },
     {
       id: 'kitsu-anime-list',
       name: 'Kitsu',
@@ -136,6 +136,7 @@ builder.defineCatalogHandler((args) => {
 });
 
 builder.defineMetaHandler((args) => {
+  console.log("🖥️ ~ args: ", args)
   if (args.id.match(/^(?:kitsu|mal|anilist|anidb):\d+$/)) {
     return getKitsuIdMetadata(args.id);
   }
