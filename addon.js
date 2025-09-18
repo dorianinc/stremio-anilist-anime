@@ -23,12 +23,12 @@ const manifest = {
   catalogs: [
     {
       id: 'anilist-anime-trending',
-      name: 'Trending (AniList)',
+      name: 'Anilist Trending',
       type: 'anime'
     },
     {
       id: 'anilist-anime-popular-season',
-      name: 'Popular This Season (AniList)',
+      name: 'Anilist Popular This Season',
       type: 'anime'
     },
     // Keep original Kitsu catalogs if you want them too
