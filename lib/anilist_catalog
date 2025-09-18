@@ -28,9 +28,10 @@ function pickTitle(t) {
 }
 
 function toCatalogMeta(media) {
+  console.log("making catalog meta data")
   return {
     id: `anilist:${media.id}`,
-    type: 'anime', // keep 'anime' to match existing Kitsu add-on catalogs
+    type: 'series', // keep 'anime' to match existing Kitsu add-on catalogs
     name: pickTitle(media.title),
     description: media.description ? String(media.description).replace(/<[^>]+>/g, '') : undefined,
     poster: media.coverImage?.large || media.coverImage?.medium,
