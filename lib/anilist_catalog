@@ -60,7 +60,12 @@ async function trendingEntries({ offset = 0, limit = PAGE_SIZE } = {}) {
   const query = `
     query ($page: Int, $perPage: Int) {
       Page(page: $page, perPage: $perPage) {
-        media(type: ANIME, sort: TRENDING_DESC, format_not_in: [MOVIE]) {
+        media(
+          type: ANIME, 
+          sort: TRENDING_DESC,
+          status: RELEASING,
+          format_not_in: [MOVIE]
+        ) {
           id
           title { romaji english native }
           description(asHtml: false)
