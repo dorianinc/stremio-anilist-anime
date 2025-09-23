@@ -9,8 +9,8 @@ const opensubtitles = require('./lib/opensubtitles_api');
 // NEW: lightweight AniList catalogs (Trending, Popular This Season)
 const anilistCatalog = require('./lib/anilist_catalog');
 
-// const CACHE_MAX_AGE = parseInt(process.env.CACHE_MAX_AGE) || 12 * 60 * 60; // 12 hours
-const CACHE_MAX_AGE = 0;
+const CACHE_MAX_AGE = parseInt(process.env.CACHE_MAX_AGE) || 12 * 60 * 60; // 12 hours
+// const CACHE_MAX_AGE = 0;
 
 /**
  * Stremio addon manifest describing:

@@ -8,7 +8,6 @@ const { search, animeData } = require('../lib/kitsu_api');
 const { getTvdbId } = require("../lib/fanart");
 
 async function importMalSeason(season) {
-  console.log("👾 importing MAL season")
   const imdbMapping = require('../static/data/imdb_mapping');
   const malEntries = await getMalSeasonalEntries(season);
   const newMappingEntries = await sequence(malEntries.map(malEntry => () => createImdbMappingEntry(malEntry)));
