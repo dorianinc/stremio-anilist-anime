@@ -6,19 +6,12 @@ const { mapToKitsuId } = require('./lib/id_convert');
 const kitsu = require('./lib/kitsu_api');
 const cinemeta = require('./lib/cinemeta_api');
 const opensubtitles = require('./lib/opensubtitles_api');
-// NEW: lightweight AniList catalogs (Trending, Popular This Season)
+// Lightweight AniList catalogs (Trending, Popular This Season)
 const anilistCatalog = require('./lib/anilist_catalog');
 
 // const CACHE_MAX_AGE = parseInt(process.env.CACHE_MAX_AGE) || 12 * 60 * 60; // 12 hours
 const CACHE_MAX_AGE = 0;
 
-/**
- * Stremio addon manifest describing:
- * - resources exposed (catalog, meta, subtitles)
- * - supported content types (anime, movie, series)
- * - catalogs (AniList trending/popular and Kitsu-based lists)
- * - accepted ID prefixes (kitsu, mal, anilist, anidb)
- */
 const manifest = {
   id: 'community.anime.dattebayo',
   version: '0.0.11',
@@ -32,12 +25,12 @@ const manifest = {
     {
       id: 'anilist-anime-trending',
       name: 'Anilist Trending',
-      type: 'anime'
+      type: 'series'
     },
     // {
     //   id: 'anilist-anime-popular-season',
     //   name: 'Anilist Popular This Season',
-    //   type: 'anime'
+    //   type: 'series'
     // },
     {
       id: 'kitsu-anime-airing',
@@ -63,8 +56,7 @@ const manifest = {
 const builder = new addonBuilder(manifest);
 
 /**
- * Mapping of catalog id -> Kitsu sort field expected by your Kitsu API wrapper.
- * (Negative prefix like '-average_rating' means descending order.)
+ * Catalog sort mapping used by Kitsu client.
  */
 const sortValue = {
   'kitsu-anime-list': 'createdAt',
@@ -74,57 +66,58 @@ const sortValue = {
 };
 
 /**
- * Mapping of catalog id -> Kitsu status filter.
- * For example, "current" narrows to currently airing shows.
+ * Catalog status mapping used by Kitsu client.
  */
 const statusValue = {
   'kitsu-anime-airing': 'current'
 };
 
 /**
- * Catalog handler
- * ----------------
- * Returns lists of metadata entries ("metas") for the requested catalog.
+ * Fire-and-forget cache warmup: for AniList metas, pre-map to Kitsu id.
+ * This reduces latency when the client opens the detail page (meta route),
+ * which helps avoid mobile timeouts.
  *
- * Supports:
- *  - AniList Trending (and optional Popular This Season)
- *  - Kitsu search ("kitsu-anime-list" with `extra.search`)
- *  - Kitsu list by lastVideosIds (to batch-resolve multiple ids)
- *  - Kitsu general entries (with optional genre/sort/status)
- *
- * Caching:
- *  Uses cacheWrapCatalog with a key derived from catalog id, genre, and skip.
- *
- * @param {Object} args - Stremio catalog request args
- * @param {string} args.id - Catalog identifier (e.g., 'anilist-anime-trending', 'kitsu-anime-airing')
- * @param {Object} [args.extra] - Extra params like { search, genre, skip, lastVideosIds }
- * @returns {Promise<{ metas: Array, cacheMaxAge: number }>}
+ * @param {Array<Object>} metas
  */
+function prewarmMappings(metas) {
+  metas
+    .filter((m) => /^anilist:\d+$/.test(m.id))
+    .forEach((m) => {
+      // ignore errors; meta route will retry anyway
+      mapToKitsuId(m.id).catch(() => {});
+    });
+}
+
 builder.defineCatalogHandler((args) => {
   const skip = (args.extra && args.extra.skip) || 0;
   const idKey = `${args.id}|${(args.extra && args.extra.genre) || 'All'}|${skip}`;
 
-  // AniList: Trending catalog
+  // AniList: Trending
   if (args.id === 'anilist-anime-trending') {
     return cacheWrapCatalog(idKey, () =>
       anilistCatalog
         .trendingEntries({ offset: skip, limit: 20 })
-        .then((metas) => ({ metas, cacheMaxAge: CACHE_MAX_AGE }))
+        .then((metas) => {
+          prewarmMappings(metas);
+          return { metas, cacheMaxAge: CACHE_MAX_AGE };
+        })
     );
   }
 
-  // AniList: Popular this season (if you decide to re-enable it above)
+  // AniList: Popular this season (if re-enabled)
   if (args.id === 'anilist-anime-popular-season') {
     return cacheWrapCatalog(idKey, () =>
       anilistCatalog
         .popularThisSeasonEntries({ offset: skip, limit: 20 })
-        .then((metas) => ({ metas, cacheMaxAge: CACHE_MAX_AGE }))
+        .then((metas) => {
+          prewarmMappings(metas);
+          return { metas, cacheMaxAge: CACHE_MAX_AGE };
+        })
     );
   }
 
-  // Kitsu: search-by-text flow (kitsu-anime-list with `extra.search`)
+  // Kitsu: search-by-text flow
   if (args.extra?.search) {
-    // Basic guard against URLs being passed as a search query
     if (args.extra.search.match(/(?:https?|stremio):\/\//)) {
       return Promise.reject(`Invalid search term: ${args.extra.search}`);
     }
@@ -133,14 +126,14 @@ builder.defineCatalogHandler((args) => {
       .then((metas) => ({ metas, cacheMaxAge: CACHE_MAX_AGE }));
   }
 
-  // Kitsu: list by explicit ids flow (kitsu-anime-list with `extra.lastVideosIds`)
+  // Kitsu: list by explicit ids flow
   if (args.extra?.lastVideosIds) {
     return kitsu
       .list(args.extra.lastVideosIds)
       .then((metas) => ({ metas, cacheMaxAge: CACHE_MAX_AGE }));
   }
 
-  // Kitsu: general catalog flow (airing/top/etc.)
+  // Kitsu: general catalog flow
   const options = {
     offset: skip,
     genre: args.extra?.genre,
@@ -157,23 +150,26 @@ builder.defineCatalogHandler((args) => {
 });
 
 /**
- * Meta handler
- * ------------
- * Resolves detailed metadata for a single item.
- *
- * ID routing:
- *  - If id looks like "<kitsu|mal|anilist|anidb>:<num>" (optionally with :<episode> for subtitles),
- *    we map/normalize to a Kitsu id and fetch enriched Kitsu metadata.
- *  - If id looks like "tt<digits>", it's treated as an IMDb id. We verify we have an IMDb mapping,
- *    then fetch Cinemeta data, enrich with Kitsu where possible, and return the enriched meta.
- *
- * @param {Object} args - Stremio meta request args
- * @param {string} args.id - The content id (e.g., "kitsu:123", "anilist:999", or "tt1234567")
- * @returns {Promise<{ meta: Object, cacheMaxAge: number }>}
+ * Meta handler:
+ *  - Accept "<source>:<id>" and also "<source>:<id>:<episode>" (mobile sometimes asks with episode)
+ *  - IMDb branch unchanged (guarded by hasImdbMapping)
+ *  - Graceful fallback on mapping failure to avoid hard "error" on mobile
  */
 builder.defineMetaHandler((args) => {
-  if (args.id.match(/^(?:kitsu|mal|anilist|anidb):\d+$/)) {
-    return getKitsuIdMetadata(args.id);
+  // Accept optional :episode suffix like the subtitles handler does
+  if (args.id.match(/^(?:kitsu|mal|anilist|anidb):\d+(?::\d+)?$/)) {
+    return getKitsuIdMetadata(args.id).catch(() => {
+      // Safety net: return a minimal meta so the client doesn’t blow up
+      return {
+        meta: {
+          id: args.id,
+          name: 'Temporarily unavailable',
+          type: 'series',
+          videos: []
+        },
+        cacheMaxAge: 60 // retry soon
+      };
+    });
   }
 
   if (args.id.match(/^tt\d+$/)) {
@@ -188,18 +184,8 @@ builder.defineMetaHandler((args) => {
 });
 
 /**
- * Subtitles handler
- * -----------------
- * Produces a redirect URL to OpenSubtitles (or returns an empty list on failure).
- *
- * Flow:
- *  1) Validate the id format for Kitsu/MAL/AniList/AniDB (optionally with episode suffix).
- *  2) Resolve metadata (via Kitsu id path).
- *  3) Ask OpenSubtitles module to compute a redirect URL based on the metadata and args.
- *
- * @param {Object} args - Stremio subtitles request args
- * @param {string} args.id - The content id, e.g., "kitsu:123:1" for episode 1
- * @returns {Promise<{ redirect: string } | { subtitles: [] }>}
+ * Subtitles handler: unchanged behavior, validates id (allows :episode),
+ * fetches meta via kitsu-id path, asks OpenSubtitles for redirect URL.
  */
 builder.defineSubtitlesHandler((args) => {
   if (!args.id.match(/^(?:kitsu|mal|anilist|anidb):\d+(?::\d+)?$/)) {
@@ -214,20 +200,15 @@ builder.defineSubtitlesHandler((args) => {
 });
 
 /**
- * getKitsuIdMetadata
- * ------------------
- * Given an id that may be "kitsu:<id>" or a foreign id like "anilist:<id>" or "mal:<id>",
- * normalize/map it to a Kitsu id, fetch base metadata from Kitsu, enrich it (e.g., with Cinemeta),
- * and return a Stremio meta response object.
+ * Normalize to Kitsu id and build enriched meta.
+ * Also strips optional :episode suffix before mapping.
  *
- * Caching:
- *  - Uses cacheWrapMeta keyed by the resolved Kitsu id.
- *
- * @param {string} id - Input id ("kitsu:123", "anilist:456", "mal:789", "anidb:42")
+ * @param {string} id - "<source>:<num>" or "<source>:<num>:<episode>"
  * @returns {Promise<{ meta: Object, cacheMaxAge: number }>}
  */
 async function getKitsuIdMetadata(id) {
-  return mapToKitsuId(id).then((kitsuId) =>
+  const baseId = id.replace(/:\d+$/, ''); // drop :episode if present
+  return mapToKitsuId(baseId).then((kitsuId) =>
     cacheWrapMeta(kitsuId, () =>
       kitsu
         .animeData(kitsuId)
@@ -238,17 +219,7 @@ async function getKitsuIdMetadata(id) {
 }
 
 /**
- * getImdbIdMetadata
- * -----------------
- * Given an IMDb id (e.g., "tt1234567"), fetch Cinemeta metadata first,
- * then enrich it using Kitsu data (to fill anime-specific or missing fields),
- * and return a Stremio meta response object.
- *
- * Caching:
- *  - Uses cacheWrapMeta keyed by the IMDb id.
- *
- * @param {string} id - IMDb id like "tt1234567"
- * @returns {Promise<{ meta: Object, cacheMaxAge: number }>}
+ * IMDb meta path: fetch Cinemeta, enrich with Kitsu hints, return.
  */
 async function getImdbIdMetadata(id) {
   return cacheWrapMeta(id, () =>
