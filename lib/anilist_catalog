@@ -28,8 +28,10 @@ function pickTitle(t) {
 }
 
 function toCatalogMeta(media) {
+  console.log("🖥️ ~ media: ", media)
   return {
     id: `anilist:${media.id}`,
+    kitsu_id: `kitsu:${media.id}`,
     type: 'series', // keep 'anime' to match existing Kitsu add-on catalogs
     name: pickTitle(media.title),
     description: media.description ? String(media.description).replace(/<[^>]+>/g, '') : undefined,
@@ -57,25 +59,38 @@ async function trendingEntries({ offset = 0, limit = PAGE_SIZE } = {}) {
   const page = pageFromOffset(offset, limit);
   const perPage = limit;
   const query = `
-    query ($page: Int, $perPage: Int) {
-      Page(page: $page, perPage: $perPage) {
-        media(
-          type: ANIME, 
-          sort: TRENDING_DESC,
-          status: RELEASING,
-          format_not_in: [MOVIE]
-        ) {
-          id
-          title { romaji english native }
-          description(asHtml: false)
-          seasonYear
-          coverImage { medium large }
-          bannerImage
-          genres
-        }
+  query ($page: Int, $perPage: Int) {
+    Page(page: $page, perPage: $perPage) {
+      media(
+        type: ANIME,
+        sort: TRENDING_DESC,
+        status: RELEASING,
+        format_not_in: [MOVIE]
+      ) {
+        id
+        idMal
+        format                # -> animeType (TV, TV_SHORT, ONA, OVA, SPECIAL, MOVIE)
+        title { romaji english native }
+        synonyms              # -> aliases (plus titles)
+        description(asHtml: false)
+        season                # -> optional for pretty releaseInfo like "Spring 2025"
+        seasonYear            # -> releaseInfo (primary)
+        coverImage { medium large extraLarge }  # -> poster
+        bannerImage                              # -> background
+        averageScore          # -> imdbRating (your choice to keep 0–100)
+        duration              # -> runtime (per-ep minutes; document your semantics)
+        episodes
+        trailer { id site thumbnail }            # -> trailers
+        siteUrl                                   # -> links (AniList page)
+        nextAiringEpisode { episode airingAt timeUntilAiring }
+        externalLinks { site url }               # -> links (merge)
       }
     }
-  `;
+  }
+`;
+
+  // seasonYear === released Year
+
   const data = await gql(query, { page, perPage });
   return (data.Page?.media || []).map(toCatalogMeta);
 }

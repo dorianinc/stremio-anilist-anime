@@ -8,6 +8,7 @@ const { search, animeData } = require('../lib/kitsu_api');
 const { getTvdbId } = require("../lib/fanart");
 
 async function importMalSeason(season) {
+  console.log("👾 importing MAL season")
   const imdbMapping = require('../static/data/imdb_mapping');
   const malEntries = await getMalSeasonalEntries(season);
   const newMappingEntries = await sequence(malEntries.map(malEntry => () => createImdbMappingEntry(malEntry)));
@@ -21,6 +22,7 @@ async function importMalSeason(season) {
 }
 
 async function createImdbMappingEntry(malEntry) {
+  console.log("👾 creating IMDB mapping entry")
   const kitsuIdFromMal = await queryIdMapping(`mal`, malEntry.malId).catch((err) => undefined);
   const kitsuIdFromSearch = !kitsuIdFromMal && await search(malEntry.title)
       .then(metas => metas[0]?.kitsu_id)
