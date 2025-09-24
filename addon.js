@@ -209,15 +209,15 @@ builder.defineMetaHandler((args) => {
           "meta result (kitsu/anilist/mal/anidb) fields",
           Object.keys(res.meta || {})
         );
-        console.log("fall out boy")
+        console.log("videos count", res.meta.videos.length)
         if (Array.isArray(res.meta?.videos))
           console.log("the story so far")
-          L.META("videos count", res.meta.videos.length);
+          // L.META("videos count", res.meta.videos.length);
         return res;
       })
       .catch((e) => {
-        console.log("three days grace")
-        L.ERR("getKitsuIdMetadata error", e?.message || e);
+        console.log("getKitsuIdMetadata error", e?.message || e)
+        // L.ERR("getKitsuIdMetadata error", e?.message || e);
         throw e;
       });
   }
@@ -258,7 +258,7 @@ builder.defineSubtitlesHandler((args) => {
   return getKitsuIdMetadata(args.id)
     .then((metaResponse) => {
       // L.SUB("meta ok?", !!metaResponse?.meta);
-      console.log(" ---> banana");
+      console.log("meta ok?", !!metaResponse?.meta);
       return metaResponse.meta;
     })
     .then((metadata) => opensubtitles.getRedirectUrl(metadata, args))
@@ -288,22 +288,22 @@ async function getKitsuIdMetadata(id) {
         kitsu
           .animeData(kitsuId)
           .then((metadata) => {
-            console.log("potato")
-            L.META("kitsu.animeData keys", Object.keys(metadata || {}));
+            console.log("kitsu.animeData keys", Object.keys(metadata || {}))
+            // L.META("kitsu.animeData keys", Object.keys(metadata || {}));
             return enrichKitsuMetadata(metadata, cinemeta.getCinemetaMetadata);
           })
           .then((meta) => {
-            console.log("mango")
-            L.META("enriched meta fields", Object.keys(meta || {}));
+            console.log("enriched meta fields", Object.keys(meta || {}))
+            // L.META("enriched meta fields", Object.keys(meta || {}));
             if (Array.isArray(meta?.videos))
-              console.log("PUMPERNICKEL!!!!!")
-              L.META("videos count", meta.videos.length);
+              console.log("videos count", meta.videos.length)
+              // L.META("videos count", meta.videos.length);
             return { meta, cacheMaxAge: CACHE_MAX_AGE };
           })
       );
     })
     .catch((e) => {
-      console.log("all time low")
+      console.log("getKitsuIdMetadata error", e?.message || e)
       L.ERR("getKitsuIdMetadata error", e?.message || e);
       throw e;
     });
