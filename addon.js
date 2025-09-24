@@ -212,7 +212,7 @@ async function getKitsuIdMetadata(id) {
   return mapToKitsuId(id).then((kitsuId) => {
     console.log("mapped to kitsu id");
     return cacheWrapMeta(kitsuId, () =>
-      kitsu.animeData(kitsuId).then(() => {
+      kitsu.animeData(kitsuId).then((metadata) => {
         console.log("kitsu.animeData finished");
         return enrichKitsuMetadata(metadata, cinemeta.getCinemetaMetadata);
       }).then((meta) => {
@@ -230,7 +230,7 @@ async function getImdbIdMetadata(id) {
   console.log("getImdbIdMetadata start");
 
   return cacheWrapMeta(id, () =>
-    cinemeta.getCinemetaMetadata(id).then(() => {
+    cinemeta.getCinemetaMetadata(id).then((metadata) => {
       console.log("cinemeta finished");
       return enrichImdbMetadata(metadata, kitsu.animeData);
     }).then((meta) => {
