@@ -21,8 +21,8 @@ const L = {
   ERR: scope("ERROR"),
 };
 
-// const CACHE_MAX_AGE = parseInt(process.env.CACHE_MAX_AGE) || 12 * 60 * 60; // 12 hours
-const CACHE_MAX_AGE = 0;
+const CACHE_MAX_AGE = parseInt(process.env.CACHE_MAX_AGE) || 12 * 60 * 60; // 12 hours
+// const CACHE_MAX_AGE = 0;
 
 const manifest = {
   id: "community.anime.dattebayo",
