@@ -79,7 +79,7 @@ builder.defineCatalogHandler((args) => {
       anilistCatalog.trendingEntries({ offset: skip, limit: 20 }).then((metas) => {
         console.log("anilist trending finished");
         return { metas, cacheMaxAge: CACHE_MAX_AGE };
-      }).catch(() => {
+      }).catch((e) => {
         console.log("anilist trending error");
         throw e;
       })
@@ -92,7 +92,7 @@ builder.defineCatalogHandler((args) => {
       anilistCatalog.popularThisSeasonEntries({ offset: skip, limit: 20 }).then((metas) => {
         console.log("anilist popular season finished");
         return { metas, cacheMaxAge: CACHE_MAX_AGE };
-      }).catch(() => {
+      }).catch((e) => {
         console.log("anilist popular season error");
         throw e;
       })
@@ -108,7 +108,7 @@ builder.defineCatalogHandler((args) => {
     return kitsu.search(args.extra.search).then((metas) => {
       console.log("kitsu search finished");
       return { metas, cacheMaxAge: CACHE_MAX_AGE };
-    }).catch(() => {
+    }).catch((e) => {
       console.log("kitsu search error");
       throw e;
     });
@@ -119,7 +119,7 @@ builder.defineCatalogHandler((args) => {
     return kitsu.list(args.extra.lastVideosIds).then((metas) => {
       console.log("kitsu list finished");
       return { metas, cacheMaxAge: CACHE_MAX_AGE };
-    }).catch(() => {
+    }).catch((e) => {
       console.log("kitsu list error");
       throw e;
     });
@@ -138,7 +138,7 @@ builder.defineCatalogHandler((args) => {
     kitsu.animeEntries(options).then((metas) => {
       console.log("kitsu entries finished");
       return { metas, cacheMaxAge: CACHE_MAX_AGE };
-    }).catch(() => {
+    }).catch((e) => {
       console.log("kitsu entries error");
       throw e;
     })
@@ -154,7 +154,7 @@ builder.defineMetaHandler((args) => {
     return getKitsuIdMetadata(args.id).then((res) => {
       console.log("meta kitsu finished");
       return res;
-    }).catch(() => {
+    }).catch((e) => {
       console.log("meta kitsu error");
       throw e;
     });
@@ -169,7 +169,7 @@ builder.defineMetaHandler((args) => {
     return getImdbIdMetadata(args.id).then((res) => {
       console.log("meta imdb finished");
       return res;
-    }).catch(() => {
+    }).catch((e) => {
       console.log("meta imdb error");
       throw e;
     });
@@ -198,8 +198,9 @@ builder.defineSubtitlesHandler((args) => {
       console.log("subtitles redirect ok");
       return { redirect: url };
     })
-    .catch(() => {
-      console.log("subtitles error");
+    .catch((e) => {
+      console.log("subtitles error")
+      throw e
       return { subtitles: [] };
     });
 });
@@ -219,7 +220,7 @@ async function getKitsuIdMetadata(id) {
         return { meta, cacheMaxAge: CACHE_MAX_AGE };
       })
     );
-  }).catch(() => {
+  }).catch((e) => {
     console.log("getKitsuIdMetadata error");
     throw e;
   });
@@ -236,7 +237,7 @@ async function getImdbIdMetadata(id) {
       console.log("enrich imdb finished");
       return { meta, cacheMaxAge: CACHE_MAX_AGE };
     })
-  ).catch(() => {
+  ).catch((e) => {
     console.log("getImdbIdMetadata error");
     throw e;
   });
