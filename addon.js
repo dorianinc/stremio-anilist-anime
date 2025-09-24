@@ -12,7 +12,8 @@ const cinemeta = require("./lib/cinemeta_api");
 const opensubtitles = require("./lib/opensubtitles_api");
 const anilistCatalog = require("./lib/anilist_catalog");
 
-const CACHE_MAX_AGE = 0; // disable cache
+const CACHE_MAX_AGE = parseInt(process.env.CACHE_MAX_AGE) || 12 * 60 * 60; // 12 hour
+// const CACHE_MAX_AGE = 0; // disable cache
 
 const manifest = {
   id: "community.anime.dattebayo",
