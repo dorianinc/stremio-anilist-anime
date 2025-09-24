@@ -205,19 +205,19 @@ builder.defineMetaHandler((args) => {
     console.log("death cab for cutie")
     return getKitsuIdMetadata(args.id)
       .then((res) => {
-        // L.META(
-        //   "meta result (kitsu/anilist/mal/anidb) fields",
-        //   Object.keys(res.meta || {})
-        // );
+        L.META(
+          "meta result (kitsu/anilist/mal/anidb) fields",
+          Object.keys(res.meta || {})
+        );
         console.log("fall out boy")
         if (Array.isArray(res.meta?.videos))
           console.log("the story so far")
-          // L.META("videos count", res.meta.videos.length);
+          L.META("videos count", res.meta.videos.length);
         return res;
       })
       .catch((e) => {
         console.log("three days grace")
-        // L.ERR("getKitsuIdMetadata error", e?.message || e);
+        L.ERR("getKitsuIdMetadata error", e?.message || e);
         throw e;
       });
   }
@@ -289,12 +289,12 @@ async function getKitsuIdMetadata(id) {
           .animeData(kitsuId)
           .then((metadata) => {
             console.log("potato")
-            // L.META("kitsu.animeData keys", Object.keys(metadata || {}));
+            L.META("kitsu.animeData keys", Object.keys(metadata || {}));
             return enrichKitsuMetadata(metadata, cinemeta.getCinemetaMetadata);
           })
           .then((meta) => {
             console.log("mango")
-            // L.META("enriched meta fields", Object.keys(meta || {}));
+            L.META("enriched meta fields", Object.keys(meta || {}));
             if (Array.isArray(meta?.videos))
               console.log("PUMPERNICKEL!!!!!")
               L.META("videos count", meta.videos.length);
