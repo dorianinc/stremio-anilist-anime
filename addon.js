@@ -35,13 +35,13 @@ const manifest = {
       name: "AniList Popular This Season",
       type: "anime",
     },
-    {
-      id: "kitsu-anime-airing",
-      name: "Kitsu Top Airing",
-      type: "anime",
-      extra: [{ name: "genre", options: genres }, { name: "skip" }],
-      genres: genres,
-    },
+    // {
+    //   id: "kitsu-anime-airing",
+    //   name: "Kitsu Top Airing",
+    //   type: "anime",
+    //   extra: [{ name: "genre", options: genres }, { name: "skip" }],
+    //   genres: genres,
+    // },
     {
       id: "kitsu-anime-list",
       name: "Kitsu",
