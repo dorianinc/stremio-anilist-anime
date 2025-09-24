@@ -147,8 +147,8 @@ builder.defineCatalogHandler((args) => {
 
 // ----- META HANDLER -----
 builder.defineMetaHandler((args) => {
+  console.log("🖥️ ~ args: ", args)
   console.log("meta handler started");
-
   if (args.id.match(/^(?:kitsu|mal|anilist|anidb):\d+$/)) {
     console.log("meta kitsu path");
     return getKitsuIdMetadata(args.id).then((res) => {
