@@ -213,6 +213,7 @@ async function getKitsuIdMetadata(id) {
     console.log("mapped to kitsu id");
     return cacheWrapMeta(kitsuId, () =>
       kitsu.animeData(kitsuId).then((metadata) => {
+        console.log("🖥️ ~ metadata: ", metadata)
         console.log("kitsu.animeData finished");
         return enrichKitsuMetadata(metadata, cinemeta.getCinemetaMetadata);
       }).then((meta) => {
