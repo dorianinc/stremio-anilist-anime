@@ -16,7 +16,7 @@ const CACHE_MAX_AGE = 0; // disable cache
 
 const manifest = {
   id: "community.anime.dattebayo",
-  version: "0.0.11",
+  version: "0.0.12",
   name: "Dattebayo",
   description:
     "Anime Kitsu-based meta/subtitles with AniList-powered Trending & Popular This Season catalogs.",
@@ -213,7 +213,7 @@ async function getKitsuIdMetadata(id) {
     console.log("mapped to kitsu id");
     return cacheWrapMeta(kitsuId, () =>
       kitsu.animeData(kitsuId).then((metadata) => {
-        console.log("🖥️ ~ metadata: ", metadata)
+        // console.log("🖥️ ~ metadata: ", metadata)
         console.log("kitsu.animeData finished");
         return enrichKitsuMetadata(metadata, cinemeta.getCinemetaMetadata);
       }).then((meta) => {
