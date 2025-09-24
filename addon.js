@@ -30,11 +30,11 @@ const manifest = {
       name: "AniList Trending",
       type: "anime",
     },
-    // {
-    //   id: "anilist-anime-popular-season",
-    //   name: "AniList Popular This Season",
-    //   type: "anime",
-    // },
+    {
+      id: "anilist-anime-popular-season",
+      name: "AniList Popular This Season",
+      type: "anime",
+    },
     {
       id: "kitsu-anime-airing",
       name: "Kitsu Top Airing",
