@@ -28,12 +28,12 @@ const manifest = {
   catalogs: [
     {
       id: "anilist-anime-trending",
-      name: "AniList Trending",
+      name: "Anilist Trending Now",
       type: "anime",
     },
     {
       id: "anilist-anime-popular-season",
-      name: "AniList Popular This Season",
+      name: "Anilist Airing This Season",
       type: "anime",
     },
     // {
@@ -90,7 +90,7 @@ builder.defineCatalogHandler((args) => {
   if (args.id === "anilist-anime-popular-season") {
     console.log("anilist popular season path");
     return cacheWrapCatalog(idKey, () =>
-      anilistCatalog.popularThisSeasonEntries({ offset: skip, limit: 20 }).then((metas) => {
+      anilistCatalog.airingThisSeasonEntries({ offset: skip, limit: 20 }).then((metas) => {
         console.log("anilist popular season finished");
         return { metas, cacheMaxAge: CACHE_MAX_AGE };
       }).catch((e) => {
