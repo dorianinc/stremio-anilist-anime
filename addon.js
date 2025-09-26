@@ -32,7 +32,7 @@ const manifest = {
       type: "anime",
     },
     {
-      id: "anilist-anime-popular-season",
+      id: "anilist-anime-airing-season",
       name: "Anilist Airing This Season",
       type: "anime",
     },
@@ -87,7 +87,7 @@ builder.defineCatalogHandler((args) => {
     );
   }
 
-  if (args.id === "anilist-anime-popular-season") {
+  if (args.id === "anilist-anime-airing-season") {
     console.log("anilist popular season path");
     return cacheWrapCatalog(idKey, () =>
       anilistCatalog.airingThisSeasonEntries({ offset: skip, limit: 20 }).then((metas) => {
